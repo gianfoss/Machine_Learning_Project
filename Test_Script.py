@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import pickle
 
-train = '/home/ssgianfortoni/ML-project/data/train.csv'
+train = pd.read_csv('/home/ssgianfortoni/ML-project/data/train.csv')
 
 corpus = CorpusGenerator(train)
 corpus.clean_data()
