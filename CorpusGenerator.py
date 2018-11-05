@@ -48,7 +48,7 @@ class CorpusGenerator:
         for sentence in self.data.loc[:, 'comment_text_tokenize']:
             sentence_stemmed = [stemmer.stem(self.clean_text(word)) for word in sentence]
             sentence_placeholder.append(sentence_stemmed)
-            self.data['comment_text_tokenize_stemmed'] = sentence_placeholder
+        self.data['comment_text_tokenize_stemmed'] = sentence_placeholder
 
         # remove stopwords
         sentence_placeholder = []
