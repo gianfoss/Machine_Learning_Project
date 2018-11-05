@@ -59,7 +59,6 @@ class CorpusGenerator:
         self.data['comment_text_clean'] = [' '.join(i) for i in self.data['comment_text_clean']]
 
         # drop NA
-        self.data.describe(include='all')
         self.data.dropna(axis=0, inplace=True)
         return self.data
 
