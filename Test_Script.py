@@ -10,11 +10,10 @@ corpus.clean_data()
 x_train_list, y_train_list, x_test, y_test = corpus.create_corpus(num_words=1000)
 
 # write as csv
-
-x_train_list[0].to_csv('/home/ssgianfortoni/ML-project/data/x_train_tfidf_1000.csv')
-y_train_list[0].to_csv('/home/ssgianfortoni/ML-project/data/y_train_tfidf_1000.csv')
-x_test.to_csv('/home/ssgianfortoni/ML-project/data/x_test_tfidf_1000.csv')
-y_test.to_csv('/home/ssgianfortoni/ML-project/data/y_test_tfidf_1000.csv')
+np.savetxt('/home/ssgianfortoni/ML-project/data/x_train_tfidf_1000.csv', x_train_list[0], delimiter=",")
+np.savetxt('/home/ssgianfortoni/ML-project/data/y_train_tfidf_1000.csv', y_train_list[0], delimiter=",")
+np.savetxt('/home/ssgianfortoni/ML-project/data/x_test_tfidf_1000.csv', x_test, delimiter=",")
+np.savetxt('/home/ssgianfortoni/ML-project/data/y_test_tfidf_1000.csv', y_test, delimiter=",")
 
 # save outputs
 #x_train_1000_path = 'x_train_1000.pkl'
