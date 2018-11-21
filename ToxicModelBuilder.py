@@ -16,7 +16,7 @@ import re
 
 toxic = pd.read_csv('train_cleaned.csv')
 
-max_features = 1000
+max_features = 500
 
 toxic.dropna(axis=0, inplace=True)
 x_train, x_test, y_train, y_test = train_test_split(toxic.loc[:,'comment_text_clean'], toxic.iloc[:,2:8], test_size = .2, random_state = 43)
@@ -29,7 +29,7 @@ tfidf_vect.fit(x_train)
 x_train_tfidf =  tfidf_vect.transform(x_train)
 x_test_tfidf =  tfidf_vect.transform(x_test)
 
-x_train_tfidf_os_all = []
+x_train_tfidf_os_all = [] #os = oversample
 y_train_tfidf_os_all = []
 
 
@@ -39,6 +39,8 @@ for i in range(6):
     x_train_tfidf_os_all.append(x_train_tfidf_os)
     y_train_tfidf_os_all.append(y_train_tfidf_os)
 
+#########
+#Start building model here
 
 class toxicmodel:
     def __init__(self, x_train, y_train, x_test, y_test, n=6):
@@ -95,8 +97,8 @@ class toxicmodel:
             self.y_predict_proba_train.append(y_predict_proba_train)
             self.y_predict_proba_test.append(y_predict_proba_test)
 
-            #self.roc_auc_score_train.append(roc_auc_score(self.y_train[i], y_predict_proba_train))
-            #self.roc_auc_score_test.append(roc_auc_score(self.y_test[i], y_predict_proba_test))
+            self.roc_auc_score_train.append(roc_auc_score(self.y_train[i], y_predict_proba_train))
+            self.roc_auc_score_test.append(roc_auc_score(self.y_test.iloc[:,i], y_predict_proba_test))
 
             self.acc_score_train.append(accuracy_score(self.y_train[i], y_predict_train))
             self.acc_score_test.append(accuracy_score(self.y_test.iloc[:,i], y_predict_test))
@@ -111,10 +113,16 @@ class toxicmodel:
             self.classification_report_test.append(classification_report(self.y_test.iloc[:,i], y_predict_test))
 
 
-if __name__ == '__main__':
-    log_toxic = toxicmodel(x_train_tfidf_os_all, y_train_tfidf_os_all, x_test_tfidf, y_test)
-    log_toxic.trainmodel(LogisticRegression(), {'random_state':[0]})
-    log_toxic.predictmodel()
+
+rf = toxicmodel(x_train_tfidf_os_all, y_train_tfidf_os_all, x_test_tfidf, y_test, n=6)
+rf.trainmodel(LogisticRegression(), {'random_state':[0]})
+rf.predictmodel()
+
+output_array = np.asarray(rf.y_predict_proba_test).reshape(6, len(x_test)).transpose()
+
+submission = pd.DataFrame(data=output_array,columns=['toxic','severe_toxic','obscene','threat','insult','identity_hate'], index=x_test.index)
+submission.to_csv('submission_sklearn.csv', index=True)
+
 
 #Get a list of F1 and Classification Report (Just Test). Cutoff is already determined by you
 
