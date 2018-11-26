@@ -2,23 +2,13 @@ import pandas as pd
 import numpy as np
 import pickle
 
-from sklearn.ensemble import RandomForestClassifier
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure
-from sklearn.preprocessing import StandardScaler, scale
 from sklearn.svm import SVC
-from sklearn.svm import LinearSVC
-from imblearn.over_sampling import SMOTE, RandomOverSampler
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from imblearn.over_sampling import RandomOverSampler
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report, f1_score, roc_auc_score
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.utils import class_weight
-from sklearn.lda import LDA
-from sklearn.qda import QDA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 
 def run_models(file, max_features=100):
@@ -41,6 +31,10 @@ def run_models(file, max_features=100):
 
     x_train_tfidf_os_all = []  # os = oversample
     y_train_tfidf_os_all = []
+
+    # turn to array
+    x_train_tfidf = x_train_tfidf.toarray()
+    x_test_tfidf = x_test_tfidf.toarray()
 
     for i in range(6):
         sm_tfidf = RandomOverSampler(random_state=40)
@@ -78,13 +72,14 @@ def run_models(file, max_features=100):
 
         # LDA Normal
 
-        mod_lda_normal = LDA(solver='lsqr', shrinkage=None).fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
+        mod_lda_normal = LinearDiscriminantAnalysis(solver='lsqr', shrinkage=None).fit(x_train_tfidf_os_all[i],
+                                                                                       y_train_tfidf_os_all[i])
 
-        pred_train = mod_lda_normal.best_estimator[i].predict(x_train[i])
-        pred_test = mod_lda_normal.best_estimator[i].predict(x_test)
+        pred_train = mod_lda_normal.predict(x_train_tfidf)
+        pred_test = mod_lda_normal.predict(x_test_tfidf)
 
-        pred_proba_train = mod_lda_normal.best_estimator[i].predict_proba(x_train[i])[:, 1]
-        pred_proba_test = mod_lda_normal.best_estimator[i].predict_proba(x_test)[:, 1]
+        pred_proba_train = mod_lda_normal.predict_proba(x_train_tfidf)[:, 1]
+        pred_proba_test = mod_lda_normal.predict_proba(x_test_tfidf)[:, 1]
 
         y_predict_train.append(pred_train)
         y_predict_test.append(pred_test)
@@ -92,30 +87,31 @@ def run_models(file, max_features=100):
         y_predict_proba_train.append(pred_proba_train)
         y_predict_proba_test.append(pred_proba_test)
 
-        roc_auc_score_train.append(roc_auc_score(y_train[i], pred_proba_train))
+        roc_auc_score_train.append(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
         roc_auc_score_test.append(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
 
-        acc_score_train.append(accuracy_score(y_train[i], pred_train))
+        acc_score_train.append(accuracy_score(y_train.iloc[:, i], pred_train))
         acc_score_test.append(accuracy_score(y_test.iloc[:, i], pred_test))
 
-        f1_score_train.append(f1_score(y_train[i], pred_train))
+        f1_score_train.append(f1_score(y_train.iloc[:, i], pred_train))
         f1_score_test.append(f1_score(y_test.iloc[:, i], pred_test))
 
-        confusion_matrix_train.append(confusion_matrix(y_train[i], pred_train))
+        confusion_matrix_train.append(confusion_matrix(y_train.iloc[:, i], pred_train))
         confusion_matrix_test.append(confusion_matrix(y_test.iloc[:, i], pred_test))
 
-        classification_report_train.append(classification_report(y_train[i], pred_train))
+        classification_report_train.append(classification_report(y_train.iloc[:, i], pred_train))
         classification_report_test.append(classification_report(y_test.iloc[:, i], pred_test))
 
         # LDA Shrinkage
 
-        mod_lda_shrink = LDA(solver='lsqr', shrinkage='auto').fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
+        mod_lda_shrink = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto').fit(x_train_tfidf_os_all[i],
+                                                                                         y_train_tfidf_os_all[i])
 
-        pred_train = mod_lda_shrink.best_estimator[i].predict(x_train[i])
-        pred_test = mod_lda_shrink.best_estimator[i].predict(x_test)
+        pred_train = mod_lda_shrink.predict(x_train_tfidf)
+        pred_test = mod_lda_shrink.predict(x_test_tfidf)
 
-        pred_proba_train = mod_lda_shrink.best_estimator[i].predict_proba(x_train[i])[:, 1]
-        pred_proba_test = mod_lda_shrink.best_estimator[i].predict_proba(x_test)[:, 1]
+        pred_proba_train = mod_lda_shrink.predict_proba(x_train_tfidf)[:, 1]
+        pred_proba_test = mod_lda_shrink.predict_proba(x_test_tfidf)[:, 1]
 
         y_predict_train.append(pred_train)
         y_predict_test.append(pred_test)
@@ -123,43 +119,30 @@ def run_models(file, max_features=100):
         y_predict_proba_train.append(pred_proba_train)
         y_predict_proba_test.append(pred_proba_test)
 
-        roc_auc_score_train.append(roc_auc_score(y_train[i], pred_proba_train))
+        roc_auc_score_train.append(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
         roc_auc_score_test.append(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
 
-        acc_score_train.append(accuracy_score(y_train[i], pred_train))
+        acc_score_train.append(accuracy_score(y_train.iloc[:, i], pred_train))
         acc_score_test.append(accuracy_score(y_test.iloc[:, i], pred_test))
 
-        f1_score_train.append(f1_score(y_train[i], pred_train))
+        f1_score_train.append(f1_score(y_train.iloc[:, i], pred_train))
         f1_score_test.append(f1_score(y_test.iloc[:, i], pred_test))
 
-        confusion_matrix_train.append(confusion_matrix(y_train[i], pred_train))
+        confusion_matrix_train.append(confusion_matrix(y_train.iloc[:, i], pred_train))
         confusion_matrix_test.append(confusion_matrix(y_test.iloc[:, i], pred_test))
 
-        classification_report_train.append(classification_report(y_train[i], pred_train))
+        classification_report_train.append(classification_report(y_train.iloc[:, i], pred_train))
         classification_report_test.append(classification_report(y_test.iloc[:, i], pred_test))
 
         # QDA
 
-        param_grid_qda = {'reg_param': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]}
+        mod_qda = QuadraticDiscriminantAnalysis().fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
 
-        type_qda = QDA(priors='None')
-        mod_qda = GridSearchCV(type_qda,
-                               param_grid_qda,
-                               scoring='f1',
-                               cv=5,
-                               refit=True,
-                               n_jobs=-1,
-                               verbose=0)
-        mod_qda.fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
+        pred_train = mod_qda.predict(x_train_tfidf)
+        pred_test = mod_qda.predict(x_test_tfidf)
 
-        best_params.append(param_grid_qda.best_params_)
-        best_estimator.append(param_grid_qda.best_estimator_)
-
-        pred_train = mod_qda.best_estimator[i].predict(x_train[i])
-        pred_test = mod_qda.best_estimator[i].predict(x_test)
-
-        pred_proba_train = mod_qda.best_estimator[i].predict_proba(x_train[i])[:, 1]
-        pred_proba_test = mod_qda.best_estimator[i].predict_proba(x_test)[:, 1]
+        pred_proba_train = mod_qda.predict_proba(x_train_tfidf)[:, 1]
+        pred_proba_test = mod_qda.predict_proba(x_test_tfidf)[:, 1]
 
         y_predict_train.append(pred_train)
         y_predict_test.append(pred_test)
@@ -167,19 +150,19 @@ def run_models(file, max_features=100):
         y_predict_proba_train.append(pred_proba_train)
         y_predict_proba_test.append(pred_proba_test)
 
-        roc_auc_score_train.append(roc_auc_score(y_train[i], pred_proba_train))
+        roc_auc_score_train.append(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
         roc_auc_score_test.append(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
 
-        acc_score_train.append(accuracy_score(y_train[i], pred_train))
+        acc_score_train.append(accuracy_score(y_train.iloc[:, i], pred_train))
         acc_score_test.append(accuracy_score(y_test.iloc[:, i], pred_test))
 
-        f1_score_train.append(f1_score(y_train[i], pred_train))
+        f1_score_train.append(f1_score(y_train.iloc[:, i], pred_train))
         f1_score_test.append(f1_score(y_test.iloc[:, i], pred_test))
 
-        confusion_matrix_train.append(confusion_matrix(y_train[i], pred_train))
+        confusion_matrix_train.append(confusion_matrix(y_train.iloc[:, i], pred_train))
         confusion_matrix_test.append(confusion_matrix(y_test.iloc[:, i], pred_test))
 
-        classification_report_train.append(classification_report(y_train[i], pred_train))
+        classification_report_train.append(classification_report(y_train.iloc[:, i], pred_train))
         classification_report_test.append(classification_report(y_test.iloc[:, i], pred_test))
 
         # Linear SVM with grid search
@@ -197,14 +180,14 @@ def run_models(file, max_features=100):
 
         mod_linear_SVM.fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
 
-        best_params.append(param_grid_linear .best_params_)
-        best_estimator.append(param_grid_linear .best_estimator_)
+        best_params.append(mod_linear_SVM.best_params_)
+        best_estimator.append(mod_linear_SVM.best_estimator_)
 
-        pred_train = mod_linear_SVM.best_estimator[i].predict(x_train[i])
-        pred_test = mod_linear_SVM.best_estimator[i].predict(x_test)
+        pred_train = mod_linear_SVM.best_estimator_.predict(x_train_tfidf)
+        pred_test = mod_linear_SVM.best_estimator_.predict(x_test_tfidf)
 
-        pred_proba_train = mod_linear_SVM.best_estimator[i].predict_proba(x_train[i])[:, 1]
-        pred_proba_test = mod_linear_SVM.best_estimator[i].predict_proba(x_test)[:, 1]
+        pred_proba_train = mod_linear_SVM.best_estimator_.predict_proba(x_train_tfidf)[:, 1]
+        pred_proba_test = mod_linear_SVM.best_estimator_.predict_proba(x_test_tfidf)[:, 1]
 
         y_predict_train.append(pred_train)
         y_predict_test.append(pred_test)
@@ -212,19 +195,19 @@ def run_models(file, max_features=100):
         y_predict_proba_train.append(pred_proba_train)
         y_predict_proba_test.append(pred_proba_test)
 
-        roc_auc_score_train.append(roc_auc_score(y_train[i], pred_proba_train))
+        roc_auc_score_train.append(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
         roc_auc_score_test.append(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
 
-        acc_score_train.append(accuracy_score(y_train[i], pred_train))
+        acc_score_train.append(accuracy_score(y_train.iloc[:, i], pred_train))
         acc_score_test.append(accuracy_score(y_test.iloc[:, i], pred_test))
 
-        f1_score_train.append(f1_score(y_train[i], pred_train))
+        f1_score_train.append(f1_score(y_train.iloc[:, i], pred_train))
         f1_score_test.append(f1_score(y_test.iloc[:, i], pred_test))
 
-        confusion_matrix_train.append(confusion_matrix(y_train[i], pred_train))
+        confusion_matrix_train.append(confusion_matrix(y_train.iloc[:, i], pred_train))
         confusion_matrix_test.append(confusion_matrix(y_test.iloc[:, i], pred_test))
 
-        classification_report_train.append(classification_report(y_train[i], pred_train))
+        classification_report_train.append(classification_report(y_train.iloc[:, i], pred_train))
         classification_report_test.append(classification_report(y_test.iloc[:, i], pred_test))
 
         # Polynomial SVM
@@ -243,14 +226,14 @@ def run_models(file, max_features=100):
 
         mod_poly_SVM.fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
 
-        best_params.append(param_grid_poly.best_params_)
-        best_estimator.append(param_grid_poly.best_estimator_)
+        best_params.append(mod_poly_SVM.best_params_)
+        best_estimator.append(mod_poly_SVM.best_estimator_)
 
-        pred_train = mod_poly_SVM.best_estimator[i].predict(x_train[i])
-        pred_test = mod_poly_SVM.best_estimator[i].predict(x_test)
+        pred_train = mod_poly_SVM.best_estimator_.predict(x_train_tfidf)
+        pred_test = mod_poly_SVM.best_estimator_.predict(x_test_tfidf)
 
-        pred_proba_train = mod_poly_SVM.best_estimator[i].predict_proba(x_train[i])[:, 1]
-        pred_proba_test = mod_poly_SVM.best_estimator[i].predict_proba(x_test)[:, 1]
+        pred_proba_train = mod_poly_SVM.best_estimator_.predict_proba(x_train_tfidf)[:, 1]
+        pred_proba_test = mod_poly_SVM.best_estimator_.predict_proba(x_test_tfidf)[:, 1]
 
         y_predict_train.append(pred_train)
         y_predict_test.append(pred_test)
@@ -258,19 +241,19 @@ def run_models(file, max_features=100):
         y_predict_proba_train.append(pred_proba_train)
         y_predict_proba_test.append(pred_proba_test)
 
-        roc_auc_score_train.append(roc_auc_score(y_train[i], pred_proba_train))
+        roc_auc_score_train.append(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
         roc_auc_score_test.append(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
 
-        acc_score_train.append(accuracy_score(y_train[i], pred_train))
+        acc_score_train.append(accuracy_score(y_train.iloc[:, i], pred_train))
         acc_score_test.append(accuracy_score(y_test.iloc[:, i], pred_test))
 
-        f1_score_train.append(f1_score(y_train[i], pred_train))
+        f1_score_train.append(f1_score(y_train.iloc[:, i], pred_train))
         f1_score_test.append(f1_score(y_test.iloc[:, i], pred_test))
 
-        confusion_matrix_train.append(confusion_matrix(y_train[i], pred_train))
+        confusion_matrix_train.append(confusion_matrix(y_train.iloc[:, i], pred_train))
         confusion_matrix_test.append(confusion_matrix(y_test.iloc[:, i], pred_test))
 
-        classification_report_train.append(classification_report(y_train[i], pred_train))
+        classification_report_train.append(classification_report(y_train.iloc[:, i], pred_train))
         classification_report_test.append(classification_report(y_test.iloc[:, i], pred_test))
 
         # Radial Kernel SVM
@@ -289,14 +272,14 @@ def run_models(file, max_features=100):
 
         mod_rbf_SVM.fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
 
-        best_params.append(param_grid_rbf.best_params_)
-        best_estimator.append(param_grid_rbf.best_estimator_)
+        best_params.append(mod_rbf_SVM.best_params_)
+        best_estimator.append(mod_rbf_SVM.best_estimator_)
 
-        pred_train = mod_rbf_SVM.best_estimator[i].predict(x_train[i])
-        pred_test = mod_rbf_SVM.best_estimator[i].predict(x_test)
+        pred_train = mod_rbf_SVM.best_estimator_.predict(x_train_tfidf)
+        pred_test = mod_rbf_SVM.best_estimator_.predict(x_test_tfidf)
 
-        pred_proba_train = mod_poly_SVM.best_estimator[i].predict_proba(x_train[i])[:, 1]
-        pred_proba_test = mod_poly_SVM.best_estimator[i].predict_proba(x_test)[:, 1]
+        pred_proba_train = mod_rbf_SVM.best_estimator_.predict_proba(x_train_tfidf)[:, 1]
+        pred_proba_test = mod_rbf_SVM.best_estimator_.predict_proba(x_test_tfidf)[:, 1]
 
         y_predict_train.append(pred_train)
         y_predict_test.append(pred_test)
@@ -304,19 +287,19 @@ def run_models(file, max_features=100):
         y_predict_proba_train.append(pred_proba_train)
         y_predict_proba_test.append(pred_proba_test)
 
-        roc_auc_score_train.append(roc_auc_score(y_train[i], pred_proba_train))
+        roc_auc_score_train.append(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
         roc_auc_score_test.append(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
 
-        acc_score_train.append(accuracy_score(y_train[i], pred_train))
+        acc_score_train.append(accuracy_score(y_train.iloc[:, i], pred_train))
         acc_score_test.append(accuracy_score(y_test.iloc[:, i], pred_test))
 
-        f1_score_train.append(f1_score(y_train[i], pred_train))
+        f1_score_train.append(f1_score(y_train.iloc[:, i], pred_train))
         f1_score_test.append(f1_score(y_test.iloc[:, i], pred_test))
 
-        confusion_matrix_train.append(confusion_matrix(y_train[i], pred_train))
+        confusion_matrix_train.append(confusion_matrix(y_train.iloc[:, i], pred_train))
         confusion_matrix_test.append(confusion_matrix(y_test.iloc[:, i], pred_test))
 
-        classification_report_train.append(classification_report(y_train[i], pred_train))
+        classification_report_train.append(classification_report(y_train.iloc[:, i], pred_train))
         classification_report_test.append(classification_report(y_test.iloc[:, i], pred_test))
 
         # Output arrays in a list
