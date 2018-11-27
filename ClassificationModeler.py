@@ -313,8 +313,13 @@ def run_models(file, max_features=100, model='lda'):
             classification_report_test.append(classification_report(y_test.iloc[:, i], pred_test))
 
         # Output arrays in a list
+        print(f1_score_train)
+        print(f1_score_test)
+        print(roc_auc_score_train)
+        print(roc_auc_score_test)
 
         name = '/home/ssgianfortoni/ML-project/' + model + '_output_' + str(max_features)
+        print(name)
         output = [y_predict_proba_test, y_predict_proba_train, f1_score_test, f1_score_train]
 
         output_pkl = open(name, 'wb')
