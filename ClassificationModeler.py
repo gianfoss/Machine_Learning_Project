@@ -313,5 +313,5 @@ def run_models(file, max_features=100, model='lda'):
             classification_report_test.append(classification_report(y_test.iloc[:, i], pred_test))
 
         # Output arrays in a list
-        output = [roc_auc_score_test, roc_auc_score_train, f1_score_test, f1_score_train]
-        return output
+
+        return classification_report_test
