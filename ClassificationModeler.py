@@ -315,7 +315,7 @@ def run_models(file, max_features=100, model='lda'):
         # Output arrays in a list
 
         name = model + '_output_' + str(max_features)
-        output = [pred_proba_test, pred_proba_train, f1_score_test, f1_score_train]
+        output = [y_predict_proba_test, y_predict_proba_train, f1_score_test, f1_score_train]
 
         output_pkl = open(name, 'wb')
         pickle.dump(output, output_pkl)
