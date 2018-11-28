@@ -41,15 +41,66 @@ for i in range(6):
 
 # lda probs
 
-lda_predict_proba_train = []
-lda_predict_proba_test = []
+#lda_predict_proba_train = []
+#lda_predict_proba_test = []
 
 # fit models
-for i in range(6):
-    # LDA Normal
+#for i in range(6):
+#    # LDA Normal
+#
+#    mod_lda_normal = LinearDiscriminantAnalysis(solver='lsqr', shrinkage=None).fit(x_train_tfidf_os_all[i],
+#                                                                                   y_train_tfidf_os_all[i])
+#
+#    pred_train = mod_lda_normal.predict(x_train_tfidf)
+#    pred_test = mod_lda_normal.predict(x_test_tfidf)
+#
+#    pred_proba_train = mod_lda_normal.predict_proba(x_train_tfidf)[:, 1]
+#    pred_proba_test = mod_lda_normal.predict_proba(x_test_tfidf)[:, 1]
+#
+#    lda_predict_proba_train.append(pred_proba_train)
+#    lda_predict_proba_test.append(pred_proba_test)
+#
+#    print(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
+#    print(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
+#
+#    print(accuracy_score(y_train.iloc[:, i], pred_train))
+#    print(accuracy_score(y_test.iloc[:, i], pred_test))
+#
+#    print(f1_score(y_train.iloc[:, i], pred_train))
+#    print(f1_score(y_test.iloc[:, i], pred_test))
+#
+#lda_test = np.asarray(lda_predict_proba_test).reshape(6, len(x_test)).transpose()
+#lda_train = np.asarray(lda_predict_proba_train).reshape(6, len(x_train)).transpose()
+#
+#lda_test = pd.DataFrame(data=lda_test)
+#lda_train = pd.DataFrame(data=lda_train)
+#
+#lda_test.to_csv('lda_test_probs.csv')
+#lda_train.to_csv('lda_train_probs.csv')
 
-    mod_lda_normal = LinearDiscriminantAnalysis(solver='lsqr', shrinkage=None).fit(x_train_tfidf_os_all[i],
-                                                                                   y_train_tfidf_os_all[i])
+# svm probs
+
+svm_predict_proba_train = []
+svm_predict_proba_test = []
+
+for i in range(6):
+    # Linear SVM with grid search
+
+    param_grid_linear = {'C': np.arange(0.01, 10.21, 0.2)}
+
+    linear_SVM_obj = SVC(kernel='linear', probability=True)
+    mod_linear_SVM = GridSearchCV(linear_SVM_obj,
+                                  param_grid_linear,
+                                  scoring='f1',
+                                  cv=5,
+                                  refit=True,
+                                  n_jobs=-1,
+                                  verbose=0)
+
+    mod_linear_SVM.fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
+
+    print(mod_linear_SVM.best_params_)
+    print(mod_linear_SVM.best_estimator_)
 
     pred_train = mod_lda_normal.predict(x_train_tfidf)
     pred_test = mod_lda_normal.predict(x_test_tfidf)
@@ -57,8 +108,8 @@ for i in range(6):
     pred_proba_train = mod_lda_normal.predict_proba(x_train_tfidf)[:, 1]
     pred_proba_test = mod_lda_normal.predict_proba(x_test_tfidf)[:, 1]
 
-    lda_predict_proba_train.append(pred_proba_train)
-    lda_predict_proba_test.append(pred_proba_test)
+    svm_predict_proba_train.append(pred_proba_train)
+    svm_predict_proba_test.append(pred_proba_test)
 
     print(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
     print(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
@@ -69,12 +120,11 @@ for i in range(6):
     print(f1_score(y_train.iloc[:, i], pred_train))
     print(f1_score(y_test.iloc[:, i], pred_test))
 
-lda_test = np.asarray(lda_predict_proba_test).reshape(6, len(x_test)).transpose()
-lda_train = np.asarray(lda_predict_proba_train).reshape(6, len(x_train)).transpose()
+svm_test = np.asarray(svm_predict_proba_test).reshape(6, len(x_test)).transpose()
+svm_train = np.asarray(svm_predict_proba_train).reshape(6, len(x_train)).transpose()
 
-lda_test = pd.DataFrame(data=lda_test)
-lda_train = pd.DataFrame(data=lda_train)
+svm_test = pd.DataFrame(data=svm_test)
+svm_train = pd.DataFrame(data=svm_train)
 
-lda_test.to_csv('lda_test_probs.csv')
-lda_train.to_csv('lda_train_probs.csv')
-
+svm_test.to_csv('svm_test_probs.csv')
+svm_train.to_csv('svm_train_probs.csv')
