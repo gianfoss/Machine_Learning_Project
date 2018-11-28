@@ -21,7 +21,7 @@ x_train, x_test, y_train, y_test = train_test_split(data.loc[:, 'comment_text_cl
 # TF-IDF Vectors as features
 
 # word level tf-idf
-tfidf_vect = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=100)
+tfidf_vect = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=1000)
 tfidf_vect.fit(x_train)
 x_train_tfidf = tfidf_vect.transform(x_train)
 x_test_tfidf = tfidf_vect.transform(x_test)
@@ -86,7 +86,7 @@ svm_predict_proba_test = []
 for i in range(6):
     # Linear SVM with grid search
 
-    param_grid_linear = {'C': np.arange(0.01, 10.21, 0.2)}
+    param_grid_linear = {'C': np.arange(0.01, 2.01, 0.2)}
 
     linear_SVM_obj = SVC(kernel='linear', probability=True)
     mod_linear_SVM = GridSearchCV(linear_SVM_obj,
