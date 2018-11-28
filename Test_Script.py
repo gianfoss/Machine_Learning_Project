@@ -1,40 +1,80 @@
-from CorpusGenerator import CorpusGenerator
 import pandas as pd
 import numpy as np
 import pickle
 
-train = pd.read_csv('/home/ssgianfortoni/ML-project/data/train.csv')
+from sklearn.svm import SVC
+from imblearn.over_sampling import RandomOverSampler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report, f1_score, roc_auc_score
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
-corpus = CorpusGenerator(train)
-corpus.clean_data()
-x_train_list, y_train_list, x_test, y_test = corpus.create_corpus(num_words=100)
+data = pd.read_csv('data/train_cleaned.csv')
+data.dropna(axis=0, inplace=True)
 
-# write as csv
-# np.savetxt('/home/ssgianfortoni/ML-project/data/x_train_tfidf_1000.csv', x_train_list[0], delimiter=",")
-# np.savetxt('/home/ssgianfortoni/ML-project/data/y_train_tfidf_1000.csv', y_train_list[0], delimiter=",")
-# np.savetxt('/home/ssgianfortoni/ML-project/data/x_test_tfidf_1000.csv', x_test, delimiter=",")
-# np.savetxt('/home/ssgianfortoni/ML-project/data/y_test_tfidf_1000.csv', y_test, delimiter=",")
+x_train, x_test, y_train, y_test = train_test_split(data.loc[:, 'comment_text_clean'],
+                                                    data.iloc[:, 2:8],
+                                                    test_size=0.2,
+                                                    random_state=43)
 
-# save outputs
-x_train_100_path = 'x_train_100.pkl'
-x_train_100_pkl = open(x_train_100_path, 'wb')
-pickle.dump(x_train_list[0], x_train_100_pkl)
+# TF-IDF Vectors as features
 
-y_train_100_path = 'y_train_100.pkl'
-y_train_100_pkl = open(y_train_100_path, 'wb')
-pickle.dump(y_train_list[0], y_train_100_pkl)
+# word level tf-idf
+tfidf_vect = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=2000)
+tfidf_vect.fit(x_train)
+x_train_tfidf = tfidf_vect.transform(x_train)
+x_test_tfidf = tfidf_vect.transform(x_test)
 
-x_test_100_path = 'x_test_100.pkl'
-x_test_100_pkl = open(x_test_100_path, 'wb')
-pickle.dump(x_test, x_test_100_pkl)
+x_train_tfidf_os_all = []  # os = oversample
+y_train_tfidf_os_all = []
 
-y_test_100_path = 'y_test_100.pkl'
-y_test_100_pkl = open(y_test_100_path, 'wb')
-pickle.dump(y_test, y_test_100_pkl)
+# turn to array
+x_train_tfidf = x_train_tfidf.toarray()
+x_test_tfidf = x_test_tfidf.toarray()
 
+for i in range(6):
+    sm_tfidf = RandomOverSampler(random_state=40)
+    x_train_tfidf_os, y_train_tfidf_os = sm_tfidf.fit_resample(x_train_tfidf, y_train.iloc[:, i])
+    x_train_tfidf_os_all.append(x_train_tfidf_os)
+    y_train_tfidf_os_all.append(y_train_tfidf_os)
 
-# Close the pickle instances
-x_train_100_pkl.close()
-y_train_100_pkl.close()
-x_test_100_pkl.close()
-y_test_100_pkl.close()
+# lda probs
+
+lda_predict_proba_train = []
+lda_predict_proba_test = []
+
+# fit models
+for i in range(6):
+    # LDA Normal
+
+    mod_lda_normal = LinearDiscriminantAnalysis(solver='lsqr', shrinkage=None).fit(x_train_tfidf_os_all[i],
+                                                                                   y_train_tfidf_os_all[i])
+
+    pred_train = mod_lda_normal.predict(x_train_tfidf)
+    pred_test = mod_lda_normal.predict(x_test_tfidf)
+
+    pred_proba_train = mod_lda_normal.predict_proba(x_train_tfidf)[:, 1]
+    pred_proba_test = mod_lda_normal.predict_proba(x_test_tfidf)[:, 1]
+
+    lda_predict_proba_train.append(pred_proba_train)
+    lda_predict_proba_test.append(pred_proba_test)
+
+    print(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
+    print(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
+
+    print(accuracy_score(y_train.iloc[:, i], pred_train))
+    print(accuracy_score(y_test.iloc[:, i], pred_test))
+
+    print(f1_score(y_train.iloc[:, i], pred_train))
+    print(f1_score(y_test.iloc[:, i], pred_test))
+
+lda_test = np.asarray(lda_predict_proba_test).reshape(6, len(x_test)).transpose()
+lda_train = np.asarray(lda_predict_proba_train).reshape(6, len(x_train)).transpose()
+
+lda_test = pd.DataFrame(data=lda_test)
+lda_train = pd.DataFrame(data=lda_train)
+
+lda_test.to_csv('lda_test_probs.csv')
+lda_train.to_csv('lda_train_probs.csv')
+
