@@ -31,15 +31,17 @@ x_test_tfidf = tfidf_vect.transform(x_test)
 x_train_tfidf_os_all = []  # os = oversample
 y_train_tfidf_os_all = []
 
-# turn to array
-x_train_tfidf = x_train_tfidf.toarray()
-x_test_tfidf = x_test_tfidf.toarray()
-
 for i in range(6):
     sm_tfidf = RandomOverSampler(random_state=40)
     x_train_tfidf_os, y_train_tfidf_os = sm_tfidf.fit_resample(x_train_tfidf, y_train.iloc[:, i])
     x_train_tfidf_os_all.append(x_train_tfidf_os)
     y_train_tfidf_os_all.append(y_train_tfidf_os)
+
+# turn to array
+for i range(6):
+    x_train_tfidf_os_all[i] = x_train_tfidf_os_all[i].toarray()
+
+x_test_tfidf = x_test_tfidf.toarray()
 
 # lda probs
 
