@@ -108,13 +108,13 @@ for i in range(6):
     X = x_train_tfidf_os_all[i]
     Y = y_train_tfidf_os_all[i]
 
-    shuffledRange = list(range(len(X)))
+    shuffledRange = list(range(X.shape[0]))
     n_iter = 5
     for n in range(n_iter):
         random.shuffle(shuffledRange)
         shuffledX = [X[j] for j in shuffledRange]
         shuffledY = [Y[j] for j in shuffledRange]
-        for batch in batches(range(len(shuffledX)), 10000):
+        for batch in batches(range(shuffledX.shape[0]), 10000):
             mod_linear_SVM.partial_fit(shuffledX[batch[0]:batch[-1] + 1], shuffledY[batch[0]:batch[-1] + 1],
                                        classes=np.unique(Y))
 
