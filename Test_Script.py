@@ -106,7 +106,7 @@ for i in range(6):
     X = x_train_tfidf_os_all[i]
     Y = y_train_tfidf_os_all[i]
 
-    shuffledRange = range(len(X))
+    shuffledRange = list(range(len(X)))
     n_iter = 5
     for n in range(n_iter):
         random.shuffle(shuffledRange)
