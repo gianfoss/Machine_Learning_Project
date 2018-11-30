@@ -23,7 +23,7 @@ x_train, x_test, y_train, y_test = train_test_split(data.loc[:, 'comment_text_cl
 # TF-IDF Vectors as features
 
 # word level tf-idf
-tfidf_vect = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=3000)
+tfidf_vect = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=2500)
 tfidf_vect.fit(x_train)
 x_train_tfidf = tfidf_vect.transform(x_train)
 x_test_tfidf = tfidf_vect.transform(x_test)
