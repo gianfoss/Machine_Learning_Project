@@ -103,11 +103,11 @@ for i in range(6):
     print(mod_linear_SVM.best_params_)
     print(mod_linear_SVM.best_estimator_)
 
-    pred_train = mod_lda_normal.predict(x_train_tfidf)
-    pred_test = mod_lda_normal.predict(x_test_tfidf)
+    pred_train = mod_linear_SVM.predict(x_train_tfidf)
+    pred_test = mod_linear_SVM.predict(x_test_tfidf)
 
-    pred_proba_train = mod_lda_normal.predict_proba(x_train_tfidf)[:, 1]
-    pred_proba_test = mod_lda_normal.predict_proba(x_test_tfidf)[:, 1]
+    pred_proba_train = mod_linear_SVM.predict_proba(x_train_tfidf)[:, 1]
+    pred_proba_test = mod_linear_SVM.predict_proba(x_test_tfidf)[:, 1]
 
     svm_predict_proba_train.append(pred_proba_train)
     svm_predict_proba_test.append(pred_proba_test)
