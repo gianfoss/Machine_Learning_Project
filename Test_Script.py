@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import pickle
+import random
 
 from sklearn.svm import SVC
 from sklearn.linear_model import SGDClassifier
@@ -87,21 +88,36 @@ svm_predict_proba_test = []
 for i in range(6):
     # Linear SVM with grid search
 
-    param_grid_SGD = {'penalty': ['l1', 'l2', 'elasticnet']}
+    def batches(l, n):
+        for i in xrange(0, len(l), n):
+            yield l[i:i + n]
 
-    linear_SVM_obj = SGDClassifier(loss="modified_huber", max_iter=5)
-    mod_linear_SVM = GridSearchCV(linear_SVM_obj,
-                                  param_grid_SGD,
-                                  scoring='f1',
-                                  cv=5,
-                                  refit=True,
-                                  n_jobs=-1,
-                                  verbose=0)
+    # param_grid_SGD = {'penalty': ['l1', 'l2', 'elasticnet']}
 
-    mod_linear_SVM.fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
+    mod_linear_SVM = SGDClassifier(loss="modified_huber", penalty='l2')
+    # mod_linear_SVM = GridSearchCV(linear_SVM_obj,
+    #                              param_grid_SGD,
+    #                              scoring='f1',
+    #                              cv=5,
+    #                              refit=True,
+    #                              n_jobs=-1,
+    #                              verbose=0)
 
-    print(mod_linear_SVM.best_params_)
-    print(mod_linear_SVM.best_estimator_)
+    X = x_train_tfidf_os_all[i]
+    Y = y_train_tfidf_os_all[i]
+
+    shuffledRange = range(len(X))
+    n_iter = 5
+    for n in range(n_iter):
+        random.shuffle(shuffledRange)
+        shuffledX = [X[j] for j in shuffledRange]
+        shuffledY = [Y[j] for j in shuffledRange]
+        for batch in batches(range(len(shuffledX)), 10000):
+            mod_linear_SVM.partial_fit(shuffledX[batch[0]:batch[-1] + 1], shuffledY[batch[0]:batch[-1] + 1],
+                                       classes=np.unique(Y))
+
+    # print(mod_linear_SVM.best_params_)
+    # print(mod_linear_SVM.best_estimator_)
 
     pred_train = mod_linear_SVM.predict(x_train_tfidf)
     pred_test = mod_linear_SVM.predict(x_test_tfidf)
