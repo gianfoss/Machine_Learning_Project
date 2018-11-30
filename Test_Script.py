@@ -105,18 +105,20 @@ for i in range(6):
     #                              n_jobs=-1,
     #                              verbose=0)
 
-    X = x_train_tfidf_os_all[i]
-    Y = y_train_tfidf_os_all[i]
+    #X = x_train_tfidf_os_all[i]
+    #Y = y_train_tfidf_os_all[i]
 
-    shuffledRange = list(range(X.shape[0]))
-    n_iter = 5
-    for n in range(n_iter):
-        random.shuffle(shuffledRange)
-        shuffledX = [X[j] for j in shuffledRange]
-        shuffledY = [Y[j] for j in shuffledRange]
-        for batch in batches(range(len(shuffledX)), 10000):
-            mod_linear_SVM.partial_fit(shuffledX[batch[0]:batch[-1] + 1], shuffledY[batch[0]:batch[-1] + 1],
-                                       classes=np.unique(Y))
+    #shuffledRange = list(range(X.shape[0]))
+    #n_iter = 5
+    #for n in range(n_iter):
+    #    random.shuffle(shuffledRange)
+    #    shuffledX = [X[j] for j in shuffledRange]
+    #    shuffledY = [Y[j] for j in shuffledRange]
+    #    for batch in batches(range(len(shuffledX)), 10000):
+    #        mod_linear_SVM.partial_fit(shuffledX[batch[0]:batch[-1] + 1], shuffledY[batch[0]:batch[-1] + 1],
+    #                                   classes=np.unique(Y))
+
+    mod_linear_SVM.fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
 
     # print(mod_linear_SVM.best_params_)
     # print(mod_linear_SVM.best_estimator_)
