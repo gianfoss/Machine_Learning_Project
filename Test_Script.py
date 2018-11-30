@@ -114,7 +114,7 @@ for i in range(6):
         random.shuffle(shuffledRange)
         shuffledX = [X[j] for j in shuffledRange]
         shuffledY = [Y[j] for j in shuffledRange]
-        for batch in batches(range(shuffledX.shape[0]), 10000):
+        for batch in batches(range(len(shuffledX)), 10000):
             mod_linear_SVM.partial_fit(shuffledX[batch[0]:batch[-1] + 1], shuffledY[batch[0]:batch[-1] + 1],
                                        classes=np.unique(Y))
 
