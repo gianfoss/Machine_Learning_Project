@@ -92,7 +92,7 @@ for i in range(6):
 
     def batches(l, n):
         for j in range(0, len(l), n):
-            yield l[j:j + n]
+            yield l[j:j + n].toarray()
 
     # param_grid_SGD = {'penalty': ['l1', 'l2', 'elasticnet']}
 
@@ -112,7 +112,7 @@ for i in range(6):
     n_iter = 5
     for n in range(n_iter):
         random.shuffle(shuffledRange)
-        shuffledX = [X[j].toarray() for j in shuffledRange]
+        shuffledX = [X[j] for j in shuffledRange]
         shuffledY = [Y[j] for j in shuffledRange]
         for batch in batches(range(len(shuffledX)), 10000):
             mod_linear_SVM.partial_fit(shuffledX[batch[0]:batch[-1] + 1], shuffledY[batch[0]:batch[-1] + 1],
