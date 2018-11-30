@@ -38,7 +38,7 @@ for i in range(6):
     y_train_tfidf_os_all.append(y_train_tfidf_os)
 
 # turn to array
-for i range(6):
+for i in range(6):
     x_train_tfidf_os_all[i] = x_train_tfidf_os_all[i].toarray()
 
 x_test_tfidf = x_test_tfidf.toarray()
