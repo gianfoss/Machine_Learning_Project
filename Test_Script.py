@@ -89,8 +89,8 @@ for i in range(6):
     # Linear SVM with grid search
 
     def batches(l, n):
-        for i in xrange(0, len(l), n):
-            yield l[i:i + n]
+        for j in xrange(0, len(l), n):
+            yield l[j:j + n]
 
     # param_grid_SGD = {'penalty': ['l1', 'l2', 'elasticnet']}
 
