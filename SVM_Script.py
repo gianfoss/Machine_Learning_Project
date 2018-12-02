@@ -54,9 +54,6 @@ for i in range(6):
     svm_predict_proba_train.append(pred_proba_train)
     svm_predict_proba_test.append(pred_proba_test)
 
-    print(mod_linear_SVM.best_params_)
-    print(mod_linear_SVM.best_estimator_)
-
     print(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
     print(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
 
