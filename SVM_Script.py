@@ -42,19 +42,8 @@ svm_predict_proba_test = []
 for i in range(6):
     # Linear SVM with grid search
 
-    param_grid_sgd = {'penalty': ['none', 'l2', 'l1', 'elasticnet'],
-                      'alpha': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]}
-
-    mod_linear_obj = SGDClassifier(loss="modified_huber")
-    mod_linear_SVM = GridSearchCV(mod_linear_obj,
-                                  param_grid_sgd,
-                                  scoring='f1',
-                                  cv=5,
-                                  refit=True,
-                                  n_jobs=-1,
-                                  verbose=0)
-
-    mod_linear_SVM.fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
+    mod_linear_SVM = SGDClassifier(loss="modified_huber", penalty='l2').fit(x_train_tfidf_os_all[i],
+                                                                            y_train_tfidf_os_all[i])
 
     pred_train = mod_linear_SVM.predict(x_train_tfidf)
     pred_test = mod_linear_SVM.predict(x_test_tfidf)
