@@ -48,8 +48,8 @@ lda_predict_proba_test = []
 for i in range(6):
     # LDA Normal
 
-    mod_lda_normal = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='none').fit(x_train_tfidf_os_all[i],
-                                                                                     y_train_tfidf_os_all[i])
+    mod_lda_normal = LinearDiscriminantAnalysis(solver='lsqr', shrinkage=None).fit(x_train_tfidf_os_all[i],
+                                                                                   y_train_tfidf_os_all[i])
 
     pred_train = mod_lda_normal.predict(x_train_tfidf)
     pred_test = mod_lda_normal.predict(x_test_tfidf)
