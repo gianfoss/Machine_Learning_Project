@@ -42,7 +42,18 @@ svm_predict_proba_test = []
 for i in range(6):
     # Linear SVM with grid search
 
-    mod_linear_SVM = SGDClassifier(loss="modified_huber", penalty='l2')
+    param_grid_sgd = {'penalty': ['none', 'l2', 'l1', 'elasticnet'],
+                      'alpha': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]}
+
+    mod_linear_obj = SGDClassifier(loss="modified_huber")
+    mod_linear_SVM = GridSearchCV(mod_linear_obj,
+                                  param_grid_sgd,
+                                  scoring='f1',
+                                  cv=5,
+                                  refit=True,
+                                  n_jobs=-1,
+                                  verbose=0)
+
     mod_linear_SVM.fit(x_train_tfidf_os_all[i], y_train_tfidf_os_all[i])
 
     pred_train = mod_linear_SVM.predict(x_train_tfidf)
@@ -53,6 +64,9 @@ for i in range(6):
 
     svm_predict_proba_train.append(pred_proba_train)
     svm_predict_proba_test.append(pred_proba_test)
+
+    print(mod_linear_SVM.best_params_)
+    print(mod_linear_SVM.best_estimator_)
 
     print(roc_auc_score(y_train.iloc[:, i], pred_proba_train))
     print(roc_auc_score(y_test.iloc[:, i], pred_proba_test))
